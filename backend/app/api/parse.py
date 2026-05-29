@@ -58,59 +58,66 @@ class CodeRequest(BaseModel):
 def parse_python(request: CodeRequest):
     """
     解析Python代码
-    
+
     【请求】
     POST /parse/python
     Body: {"code": "a = 10\\nb = 20", "language": "python"}
-    
+
     【响应】
     {
         "parse_result": {...},  // 解析结果
         "visuals": {
-            "variables": [...],  // 变量可视化数据
-            "lists": [...]       // 列表可视化数据
+            "variables": [...],      // 变量引用数据
+            "objects": [...],        // 对象数据
+            "references": [...],     // 引用关系
+            "memory_summary": {...}  // 内存摘要
         }
     }
-    
+
     【流程】
     1. 创建Python解析器
     2. 解析代码，获取执行步骤
-    3. 生成可视化数据
+    3. 生成可视化数据（引用模式）
     4. 返回结果
-    
+
     【Python解析器功能】
-    - 解析变量赋值
-    - 追踪变量历史
-    - 模拟内存地址
-    - 处理列表操作
+    - 区分变量（引用）和对象（实际数据）
+    - 追踪变量到对象的引用关系
+    - 展示引用计数
+    - 处理列表操作和深浅拷贝
     """
     logger.info(f"Parsing Python code (length: {len(request.code)})")
-    
+
     # 创建Python解析器实例
     parser = PythonParser()
-    
+
     # 解析代码，返回执行步骤和变量历史
     result = parser.parse_code(request.code)
-    
+
     # 检查是否有错误
     if "error" in result:
         logger.error(f"Python parsing error: {result['error']}")
         raise HTTPException(status_code=400, detail=result["error"])
-    
+
     # 创建可视化生成器
     generator = VisualGenerator()
-    
-    # 生成变量可视化数据
+
+    # 生成Python可视化数据（引用模式）
+    visual_data = generator.generate_python_visualization(result.get("variable_history", []))
+
+    # 生成变量可视化数据（兼容性）
     variable_data = generator.generate_variable_data(result.get("variable_history", []))
-    
-    # 生成列表可视化数据
+
+    # 生成列表可视化数据（兼容性）
     list_data = generator.generate_list_data(result.get("variable_history", []))
-    
+
     return {
         "parse_result": result,
         "visuals": {
             "variables": variable_data,
-            "lists": list_data
+            "lists": list_data,
+            # 新的引用模式数据
+            "python_mode": visual_data
         }
     }
 
@@ -121,49 +128,57 @@ def parse_python(request: CodeRequest):
 def parse_c(request: CodeRequest):
     """
     解析C/C++代码
-    
+
     【请求】
     POST /parse/c
     Body: {"code": "int main() { int a = 10; }", "language": "c"}
-    
+
     【响应】
     {
         "parse_result": {...},
         "visuals": {
-            "variables": [...],
-            "lists": [...]
+            "variables": [...],      // 变量数据
+            "lists": [...],           // 数组数据
+            "c_mode": {...}          // C语言模式数据
         }
     }
-    
+
     【C解析器功能】
-    - 解析变量声明和赋值
-    - 模拟内存布局
+    - 解析变量声明和赋值（直接存储）
+    - 模拟内存布局（连续内存）
     - 处理数组操作
     - 模拟指针操作
     - 模拟malloc/free
     """
     logger.info(f"Parsing C code (length: {len(request.code)})")
-    
+
     # 创建C解析器实例
     parser = CParser()
-    
+
     # 解析代码
     result = parser.parse_code(request.code)
-    
+
     if "error" in result:
         logger.error(f"C parsing error: {result['error']}")
         raise HTTPException(status_code=400, detail=result["error"])
-    
+
     # 生成可视化数据
     generator = VisualGenerator()
+
+    # 生成C语言可视化数据（直接模式）
+    c_visual_data = generator.generate_c_visualization(result.get("variable_history", []))
+
+    # 兼容性数据
     variable_data = generator.generate_variable_data(result.get("variable_history", []))
     list_data = generator.generate_list_data(result.get("variable_history", []))
-    
+
     return {
         "parse_result": result,
         "visuals": {
             "variables": variable_data,
-            "lists": list_data
+            "lists": list_data,
+            # 新的C语言模式数据
+            "c_mode": c_visual_data
         }
     }
 
@@ -174,36 +189,37 @@ def parse_c(request: CodeRequest):
 def get_copy_comparison(request: CodeRequest):
     """
     深浅拷贝对比分析
-    
+
     【请求】
     POST /parse/copy-comparison
-    Body: {"code": "original = [[1,2],[3,4]]\\nshallow = list(original)", "language": "python"}
-    
+    Body: {"code": "original = [[1,2],[3,4]]\\nshallow = list(original)\\ndeep = copy.deepcopy(original)", "language": "python"}
+
     【响应】
     {
         "original": {...},      // 原始对象信息
         "shallow_copy": {...},  // 浅拷贝信息
         "deep_copy": {...},     // 深拷贝信息
-        "has_comparison": true  // 是否有对比数据
+        "has_comparison": true,  // 是否有对比数据
+        "explanation": {...}    // 解释说明
     }
-    
+
     【教学目的】
     展示浅拷贝和深拷贝的区别：
-    - 浅拷贝：复制引用，嵌套对象共享内存
-    - 深拷贝：完全独立，所有对象都是新的
+    - 浅拷贝：外层列表新地址，内层元素共享地址
+    - 深拷贝：所有对象都是新地址
     """
     logger.info(f"Generating copy comparison (length: {len(request.code)})")
-    
+
     # 使用Python解析器解析代码
     parser = PythonParser()
     result = parser.parse_code(request.code)
-    
+
     if "error" in result:
         logger.error(f"Copy comparison error: {result['error']}")
         raise HTTPException(status_code=400, detail=result["error"])
-    
+
     # 生成拷贝对比数据
     generator = VisualGenerator()
     comparison = generator.generate_copy_comparison(result.get("variable_history", []))
-    
+
     return comparison
