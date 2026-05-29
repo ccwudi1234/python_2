@@ -28,12 +28,11 @@ load_dotenv()
 # ============================================
 # 【路径配置】
 # ============================================
-# BASE_DIR: 项目根目录（backend文件夹的父目录）
-# Path(__file__)获取当前文件路径，parent.parent.parent向上三级
-BASE_DIR = Path(__file__).parent.parent.parent
+# BASE_DIR: backend根目录
+# Path(__file__)获取当前文件路径（app/config.py），向上两级到 backend/
+BASE_DIR = Path(__file__).parent.parent
 
-# UPLOAD_DIR: 文件上传目录，用于存储用户上传的代码文件
-# mkdir(parents=True, exist_ok=True) 自动创建目录，即使父目录不存在
+# UPLOAD_DIR: 文件上传目录
 UPLOAD_DIR = BASE_DIR / "app" / "static"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -82,7 +81,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7天
 # 前端和后端通常运行在不同端口，需要CORS允许跨域请求
 ALLOWED_ORIGINS = [
     "http://localhost:5173",      # Vite开发服务器默认端口
-    "http://127.0.0.1:5173",      # 同上，IP地址形式
+    "http://127.0.0.1:5173",  # 同上，IP地址形式
+    "http://localhost:5174",      # Vite备用端口
+    "http://127.0.0.1:5174",
     "http://localhost:8080",      # 其他可能的开发端口
     "http://127.0.0.1:8080",
     "http://localhost",           # 生产环境可能使用的端口
