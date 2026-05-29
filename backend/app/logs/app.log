@@ -1,0 +1,19 @@
+2026-05-29 17:51:30,759 - app.main - ERROR - Failed to initialize database: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-05-29 17:52:11,540 - app.main - ERROR - Failed to initialize database: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-05-29 17:53:45,221 - app.main - ERROR - Failed to initialize database: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-05-29 17:54:24,565 - app.main - INFO - Database initialized successfully
+2026-05-29 17:58:33,231 - app.main - INFO - Database initialized successfully
+2026-05-29 18:00:13,241 - app.main - INFO - Database initialized successfully
+2026-05-29 18:01:08,485 - app.main - INFO - Database initialized successfully
+2026-05-29 18:01:42,348 - app.main - INFO - Database initialized successfully
+2026-05-29 18:03:33,532 - app.main - INFO - Database initialized successfully
+2026-05-29 18:06:13,521 - app.main - INFO - Database initialized successfully
+2026-05-29 18:08:55,857 - app.main - INFO - Database initialized successfully
+2026-05-29 18:15:13,728 - app.main - INFO - Database initialized successfully
+2026-05-29 18:17:29,760 - api.parse - INFO - Parsing Python code (length: 6)
+2026-05-29 18:18:38,503 - api.parse - INFO - Parsing Python code (length: 6)
+2026-05-29 18:19:12,862 - app.main - INFO - Database initialized successfully
+2026-05-29 18:19:22,814 - app.main - INFO - Database initialized successfully
